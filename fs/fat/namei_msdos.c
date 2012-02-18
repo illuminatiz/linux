@@ -292,6 +292,7 @@ static int msdos_create(struct inode *dir, struct dentry *dentry, umode_t mode,
 	err = msdos_add_entry(dir, msdos_name, 0, is_hid, 0, &ts, &sinfo);
 	if (err)
 		goto out;
+	printk("Created a file: %s\n",msdos_name); //shankar
 	inode = fat_build_inode(sb, sinfo.de, sinfo.i_pos);
 	brelse(sinfo.bh);
 	if (IS_ERR(inode)) {
@@ -328,7 +329,7 @@ static int msdos_rmdir(struct inode *dir, struct dentry *dentry)
 	err = msdos_find(dir, dentry->d_name.name, dentry->d_name.len, &sinfo);
 	if (err)
 		goto out;
-
+	printk("Removed directory: %s\n",dentry->d_name.name); //shankar
 	err = fat_remove_entries(dir, &sinfo);	/* and releases bh */
 	if (err)
 		goto out;
@@ -379,7 +380,7 @@ static int msdos_mkdir(struct inode *dir, struct dentry *dentry, umode_t mode)
 	if (err)
 		goto out_free;
 	inc_nlink(dir);
-
+	printk("Created directory: %s\n",msdos_name); //shankar
 	inode = fat_build_inode(sb, sinfo.de, sinfo.i_pos);
 	brelse(sinfo.bh);
 	if (IS_ERR(inode)) {
@@ -416,6 +417,7 @@ static int msdos_unlink(struct inode *dir, struct dentry *dentry)
 	err = msdos_find(dir, dentry->d_name.name, dentry->d_name.len, &sinfo);
 	if (err)
 		goto out;
+	printk("Removed file: %s\n",dentry->d_name.name); //shankar
 
 	err = fat_remove_entries(dir, &sinfo);	/* and releases bh */
 	if (err)
@@ -664,12 +666,13 @@ static struct dentry *msdos_mount(struct file_system_type *fs_type,
 			int flags, const char *dev_name,
 			void *data)
 {
+	printk("Successfully mounted msdos system!\n");	
 	return mount_bdev(fs_type, flags, dev_name, data, msdos_fill_super);
 }
 
 static struct file_system_type msdos_fs_type = {
 	.owner		= THIS_MODULE,
-	.name		= "msdos",
+	.name		= "pfat",
 	.mount		= msdos_mount,
 	.kill_sb	= kill_block_super,
 	.fs_flags	= FS_REQUIRES_DEV,
