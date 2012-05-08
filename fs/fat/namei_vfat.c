@@ -22,6 +22,8 @@
 #include <linux/buffer_head.h>
 #include <linux/namei.h>
 #include "fat.h"
+#include <linux/string.h>
+#include <linux/syscalls.h>
 
 /*
  * If new entry was created in the parent, it could create the 8.3
@@ -808,7 +810,7 @@ static int vfat_create(struct inode *dir, struct dentry *dentry, umode_t mode,
 	inode->i_version++;
 	inode->i_mtime = inode->i_atime = inode->i_ctime = ts;
 	/* timestamp is already written, so mark_inode_dirty() is unneeded. */
-
+	printk("Created file: %s\n",dentry->d_name.name);
 	dentry->d_time = dentry->d_parent->d_inode->i_version;
 	d_instantiate(dentry, inode);
 out:
@@ -838,6 +840,7 @@ static int vfat_rmdir(struct inode *dir, struct dentry *dentry)
 	drop_nlink(dir);
 
 	clear_nlink(inode);
+	printk("Deleted directory: %s\n",dentry->d_name.name);
 	inode->i_mtime = inode->i_atime = CURRENT_TIME_SEC;
 	fat_detach(inode);
 out:
@@ -863,6 +866,7 @@ static int vfat_unlink(struct inode *dir, struct dentry *dentry)
 	if (err)
 		goto out;
 	clear_nlink(inode);
+	printk("Deleted file: %s\n",dentry->d_name.name);
 	inode->i_mtime = inode->i_atime = CURRENT_TIME_SEC;
 	fat_detach(inode);
 out:
@@ -892,7 +896,7 @@ static int vfat_mkdir(struct inode *dir, struct dentry *dentry, umode_t mode)
 		goto out_free;
 	dir->i_version++;
 	inc_nlink(dir);
-
+	printk("Created directory: %s\n",dentry->d_name.name);
 	inode = fat_build_inode(sb, sinfo.de, sinfo.i_pos);
 	brelse(sinfo.bh);
 	if (IS_ERR(inode)) {
@@ -1080,12 +1084,16 @@ static struct dentry *vfat_mount(struct file_system_type *fs_type,
 		       int flags, const char *dev_name,
 		       void *data)
 {
+	printk("Powerfail safe FAT file system successfully mounted.\n");
+	/*LOG_PATH=dev_name;
+	strcat(LOG_PATH,"/fat_log");*/
 	return mount_bdev(fs_type, flags, dev_name, data, vfat_fill_super);
 }
 
+
 static struct file_system_type vfat_fs_type = {
 	.owner		= THIS_MODULE,
-	.name		= "vfat",
+	.name		= "pfat",
 	.mount		= vfat_mount,
 	.kill_sb	= kill_block_super,
 	.fs_flags	= FS_REQUIRES_DEV,

@@ -20,6 +20,7 @@
 #include <linux/fs_struct.h>	/* get_fs_root et.al. */
 #include <linux/fsnotify.h>	/* fsnotify_vfsmount_delete */
 #include <linux/uaccess.h>
+#include <linux/string.h>
 #include "pnode.h"
 #include "internal.h"
 
@@ -2361,10 +2362,12 @@ SYSCALL_DEFINE5(mount, char __user *, dev_name, char __user *, dir_name,
 		char __user *, type, unsigned long, flags, void __user *, data)
 {
 	int ret;
+	int fd;
 	char *kernel_type;
 	char *kernel_dir;
 	char *kernel_dev;
 	unsigned long data_page;
+	mm_segment_t old_fs;
 
 	ret = copy_mount_string(type, &kernel_type);
 	if (ret < 0)
@@ -2394,7 +2397,22 @@ out_dev:
 	putname(kernel_dir);
 out_dir:
 	kfree(kernel_type);
+
 out_type:
+	//shankar
+	if(strcmp(type,"pfat")==0)
+	{
+		printk("File system: pfat\n");
+		printk("Mount point: %s\n", dir_name);
+		old_fs = get_fs();
+		set_fs(KERNEL_DS);
+		strcat(dir_name,"/fat_log");
+		fd = sys_open(dir_name, O_RDWR| O_CREAT, 0744);
+		if(fd > 0)
+			printk("PFAT: Log file successfully created/found.\n");
+		//printk("File desc: %d\n",fd);
+		
+	}
 	return ret;
 }
 

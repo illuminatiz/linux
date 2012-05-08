@@ -163,6 +163,8 @@ static int fat_write_begin(struct file *file, struct address_space *mapping,
 				&MSDOS_I(mapping->host)->mmu_private);
 	if (err < 0)
 		fat_write_failed(mapping, pos + len);
+	else
+		printk("Begun to write data!\n");
 	return err;
 }
 
@@ -180,6 +182,7 @@ static int fat_write_end(struct file *file, struct address_space *mapping,
 		MSDOS_I(inode)->i_attrs |= ATTR_ARCH;
 		mark_inode_dirty(inode);
 	}
+	printk("Data written completely.\n");
 	return err;
 }
 
@@ -215,7 +218,7 @@ static ssize_t fat_direct_IO(int rw, struct kiocb *iocb,
 				 fat_get_block);
 	if (ret < 0 && (rw & WRITE))
 		fat_write_failed(mapping, offset + iov_length(iov, nr_segs));
-
+	printk("Direct IO called.\n");
 	return ret;
 }
 

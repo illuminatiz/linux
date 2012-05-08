@@ -90,7 +90,7 @@ struct msdos_sb_info {
 };
 
 #define FAT_CACHE_VALID	0	/* special case for valid cache */
-
+//static char* LOG_PATH=NULL;
 /*
  * MS-DOS file system inode data in memory
  */
@@ -252,6 +252,23 @@ extern int fat_add_entries(struct inode *dir, void *slots, int nr_slots,
 			   struct fat_slot_info *sinfo);
 extern int fat_remove_entries(struct inode *dir, struct fat_slot_info *sinfo);
 
+/* Changes for log records */
+struct pfat_log_record{
+	__u8*   name;/* name and extension */
+	__u8    attr;           /* attribute bits */
+	__u8	lfn_count;		/* long file name entries, count */
+	__u8	log_op;			/* type of operation */
+	__le32	d_dcluster;		/* Directory cluster; Cluster in which this 32 byte directory entry exist. */
+	__le16	d_index;		/* Index in the d_dcluster;This index points to 32 byte directory entry */
+	__le16	fst_clust_hi;	/* higher byte of first cluster */
+	__le32	d_cluster;		/* starting cluster for change */
+	__le16 	fst_clust_lo;	/* lower byte of first cluster */
+	__le32	fsize;			/* size of the file */
+};
+
+
+
+/* end of log record specifics */
 /* fat/fatent.c */
 struct fat_entry {
 	int entry;
@@ -300,6 +317,7 @@ extern int fat_alloc_clusters(struct inode *inode, int *cluster,
 			      int nr_cluster);
 extern int fat_free_clusters(struct inode *inode, int cluster);
 extern int fat_count_free_clusters(struct super_block *sb);
+extern void build_pfat_log(struct pfat_log_record* log, struct inode* dir, u8 op);
 
 /* fat/file.c */
 extern long fat_generic_ioctl(struct file *filp, unsigned int cmd,
