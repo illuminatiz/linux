@@ -1360,3 +1360,25 @@ error_remove:
 }
 
 EXPORT_SYMBOL_GPL(fat_add_entries);
+
+//shankar
+/*
+void build_pfat_log(struct pfat_log_record* log, struct inode* dir, u8 op)
+{
+	//struct super_block *sb = dir->i_sb;
+       // struct msdos_sb_info *sbi = MSDOS_SB(sb);
+        struct buffer_head *bh = NULL;
+        struct msdos_dir_entry *de=NULL;
+        int index,pos=0;
+        
+        index = fat_get_entry(dir,&pos,&bh,&de);
+        log->name = de->name;
+        log->attr = de->attr;
+        if((op ^ 1) == 0)
+        	log->log_op = 0x02;
+        log->fst_clust_hi = de->starthi;
+        log->fst_clust_lo = de->start;
+	log->fsize = de->size;
+	log->d_cluster = log->d_dcluster = 0;
+	log->d_index = index;
+}*/

@@ -1073,10 +1073,33 @@ static struct dentry *vfat_mount(struct file_system_type *fs_type,
 		       int flags, const char *dev_name,
 		       void *data)
 {
+	struct dentry* mount_root, *log_file=NULL;
+	struct inode* mr_inode;
+	struct nameidata* nd=NULL;
+	struct fat_slot_info sinfo;
+	char* l_name="fat_log";
+	int err;
 	printk("Powerfail safe FAT file system successfully mounted.\n");
-	/*LOG_PATH=dev_name;
-	strcat(LOG_PATH,"/fat_log");*/
-	return mount_bdev(fs_type, flags, dev_name, data, vfat_fill_super);
+	mount_root = mount_bdev(fs_type, flags, dev_name, data, vfat_fill_super);
+	//shankar
+	mr_inode = mount_root->d_inode;
+	//Create an empty dentry for the log file.
+	log_file = d_alloc_name(mount_root,l_name);
+	err = vfat_find(mr_inode, &log_file->d_name, &sinfo);
+	pfat_log_file = log_file;
+	if(err)
+	{
+		if(vfat_create(mr_inode,log_file,0,nd))
+			printk("Error creating file!\n");
+		else
+			extend_log_file(log_file->d_inode);
+			//mirror_bhs required, if clusters are added from FAT2	
+	}
+	else
+		printk("File already exists!\n");
+		
+	dput(log_file);
+	return mount_root;
 }
 
 

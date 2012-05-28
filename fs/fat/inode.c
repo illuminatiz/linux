@@ -46,11 +46,28 @@ static int fat_add_cluster(struct inode *inode)
 	if (err)
 		return err;
 	/* FIXME: this cluster should be added after data of this
-	 * cluster is writed */
+	 * cluster is writed  */
 	err = fat_chain_add(inode, cluster, 1);
 	if (err)
 		fat_free_clusters(inode, cluster);
 	return err;
+}
+
+
+//shankar
+void fat_umount_begin(struct super_block * sb)
+{
+	//Code to release the dentry
+	printk("fat_umount_begin: Releasing dentry.\n");
+	dput(pfat_log_file);
+	
+}
+
+void extend_log_file(struct inode * log_file)
+{
+	int i;
+	for(i=0;i<4;i++)
+			fat_add_cluster(log_file);
 }
 
 static inline int __fat_get_block(struct inode *inode, sector_t iblock,
@@ -685,7 +702,7 @@ static const struct super_operations fat_sops = {
 	.sync_fs	= fat_sync_fs,
 	.statfs		= fat_statfs,
 	.remount_fs	= fat_remount,
-
+	.umount_begin	= fat_umount_begin,
 	.show_options	= fat_show_options,
 };
 

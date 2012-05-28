@@ -91,6 +91,8 @@ struct msdos_sb_info {
 
 #define FAT_CACHE_VALID	0	/* special case for valid cache */
 //static char* LOG_PATH=NULL;
+
+static struct dentry* pfat_log_file;
 /*
  * MS-DOS file system inode data in memory
  */
@@ -319,6 +321,7 @@ extern int fat_free_clusters(struct inode *inode, int cluster);
 extern int fat_count_free_clusters(struct super_block *sb);
 extern void build_pfat_log(struct pfat_log_record* log, struct inode* dir, u8 op);
 
+
 /* fat/file.c */
 extern long fat_generic_ioctl(struct file *filp, unsigned int cmd,
 			      unsigned long arg);
@@ -343,6 +346,7 @@ extern int fat_fill_super(struct super_block *sb, void *data, int silent,
 
 extern int fat_flush_inodes(struct super_block *sb, struct inode *i1,
 		            struct inode *i2);
+extern void extend_log_file(struct inode* log_file); //shankar
 /* fat/misc.c */
 extern __printf(3, 4) __cold
 void __fat_fs_error(struct super_block *sb, int report, const char *fmt, ...);
